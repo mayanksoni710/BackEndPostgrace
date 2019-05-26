@@ -1,13 +1,28 @@
-import mongoose from 'mongoose'
+const users = (sequelize, DataTypes) => {
+  const Users = sequelize.define('users', {
+    name: {
+      type: DataTypes.TEXT,
+    },
+    gender: {
+      type: DataTypes.TEXT,
+    },
+    age: {
+      type: DataTypes.INTEGER,
+    },
+    email: {
+      type: DataTypes.TEXT,
+    },
+    address: {
+      type: DataTypes.TEXT,
+    },
+  })
+  Users.associate = (models) => {
+    Users.hasMany(models.Categories)
+  }
+  Users.associate = (models) => {
+    Users.hasMany(models.Products)
+  }
+  return Users
+}
 
-const usersSchema = mongoose.Schema({
-  _id: mongoose.SchemaTypes.ObjectId,
-  userId: String,
-  name: String,
-  gender: String,
-  age: Number,
-  email: String,
-  address: String,
-})
-
-export default mongoose.model('users', usersSchema, 'users')
+export default users

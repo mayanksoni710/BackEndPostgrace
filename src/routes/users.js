@@ -1,7 +1,5 @@
 import express from 'express'
-import mongoose from 'mongoose'
-import uniqid from 'uniqid'
-import Users from '../database/models/users.model'
+import models from '../database'
 import { createError } from '../utilities'
 import {
   USER_NOT_FOUND,
@@ -15,10 +13,19 @@ import {
   USER_ID_MISSING,
 } from '../constants/StaticConstants'
 
+const { Users } = models
 const router = express.Router()
-router.get('/', (req, res, next) => {
-  Users.find({}, { _id: 0 })
-    .exec()
+router.get('/:userId', (req, res, next) => {
+  const {
+    params: {
+      userId: id = -1,
+    } = {},
+  } = req
+  Users.findAll({
+    where: {
+      id,
+    },
+  })
     .then((response) => {
       if (response) res.status(200).json(response)
       else next(createError(200, USER_NOT_FOUND))
@@ -27,20 +34,39 @@ router.get('/', (req, res, next) => {
       next(createError(400, USER_ID_INVALID))
     })
 })
+
+router.get('/', (req, res, next) => {
+  Users.findAll()
+    .then((response) => {
+      if (response) res.status(200).json(response)
+      else next(createError(200, USER_NOT_FOUND))
+    })
+    .catch(() => {
+      next(createError(400, USER_ID_INVALID))
+    })
+})
+
 router.delete('/:userId?', (req, res, next) => {
   const {
     params: {
-      userId = -1,
+      userId: id = -1,
     } = {},
   } = req
-  if (userId === -1) {
+  if (id === -1) {
     next(createError(200, USER_ID_MISSING))
     return
   }
-  Users.deleteOne({ userId }, (err) => {
-    if (err) next(createError(400, ERROR_DELETING_USER))
-    res.status(200).send({ message: USER_DELETED_SUCCESSFULLY })
+  Users.destroy({
+    where: {
+      id,
+    },
   })
+    .then(() => {
+      res.status(200).send({ message: USER_DELETED_SUCCESSFULLY })
+    })
+    .catch(() => {
+      next(createError(400, ERROR_DELETING_USER))
+    })
 })
 
 router.post('/', (req, res, next) => {
@@ -53,19 +79,18 @@ router.post('/', (req, res, next) => {
       address = -1,
     },
   } = req
-  const newUser = new Users({
-    _id: new mongoose.Types.ObjectId(),
-    userId: uniqid.time(),
+  Users.create({
     name,
     gender,
     age,
     email,
     address,
   })
-  newUser.save()
     .then((response) => {
-      if (response) res.status(200).json(response)
-      else next(createError(200, USER_ADDED_SUCCESSFULLY))
+      res.status(200).json({
+        message: USER_ADDED_SUCCESSFULLY,
+        DataAdded: response,
+      })
     })
     .catch(() => {
       next(createError(400, ERROR_ADDING_USER))
@@ -75,7 +100,7 @@ router.post('/', (req, res, next) => {
 router.put('/:userId?', (req, res, next) => {
   const {
     params: {
-      userId = -1,
+      userId: id = -1,
     } = {},
     body: {
       name = -1,
@@ -86,7 +111,7 @@ router.put('/:userId?', (req, res, next) => {
     },
   } = req
   let detailsToUpdate = {}
-  if (userId === -1) {
+  if (id === -1) {
     next(createError(200, USER_ID_MISSING))
     return
   }
@@ -121,13 +146,21 @@ router.put('/:userId?', (req, res, next) => {
     }
   }
   Users.update(
-    { userId },
     { ...detailsToUpdate },
-    (err) => {
-      if (err) { next(createError(400, ERROR_UPDATING_USER)) }
-      next(createError(200, USER_UPDATED_SUCCESSFULLY))
+    {
+      where: {
+        id,
+      },
     },
   )
+    .then(() => {
+      res.status(200).send({
+        message: USER_UPDATED_SUCCESSFULLY,
+      })
+    })
+    .catch(() => {
+      next(createError(400, ERROR_UPDATING_USER))
+    })
 })
 
 

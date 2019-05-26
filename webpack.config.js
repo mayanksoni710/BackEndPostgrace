@@ -15,6 +15,10 @@ fs.readdirSync('node_modules')
 
 module.exports = {
   target: 'node',
+  node: {
+    __dirname: true,
+    __filename: true,
+  },
   mode: 'development',
   entry: './src/index.js',
   output: {

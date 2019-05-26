@@ -1,5 +1,5 @@
 import express from 'express'
-import Products from '../database/models/products.model'
+import models from '../database'
 import { createError } from '../utilities'
 import {
   PRODUCT_NOT_FOUND,
@@ -8,6 +8,7 @@ import {
   UNABLE_TO_FETCH_PRODUCTS_RESPONSE,
 } from '../constants/StaticConstants'
 
+const { Products } = models
 const router = express.Router()
 const createHtmlResponseForQr = (res, dataResponse) => {
   dataResponse.map(({ productName, qRcode }) => res.write(`<div><div>${productName}</div><img height="50px" width="50px" src="${qRcode}" /></div>`))
@@ -28,11 +29,16 @@ router.get('/:userId?/:categoryId?', (req, res, next) => {
     return
   }
 
-  Products.find({ userId, categoryId }, { _id: 0, productName: 1, qRcode: 1 })
-    .exec()
+  Products.findAll({
+    where: {
+      userId,
+      categoryId,
+    },
+  })
     .then((dataResponse) => {
-      if (dataResponse) res.status(200).send(createHtmlResponseForQr(res, dataResponse))
-      else next(createError(200, PRODUCT_NOT_FOUND))
+      if (dataResponse) {
+        res.status(200).send(createHtmlResponseForQr(res, dataResponse))
+      } else next(createError(200, PRODUCT_NOT_FOUND))
     })
     .catch(() => {
       next(createError(400, UNABLE_TO_FETCH_PRODUCTS_RESPONSE))

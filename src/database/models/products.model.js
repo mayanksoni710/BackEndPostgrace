@@ -1,16 +1,41 @@
-import mongoose from 'mongoose'
+const products = (sequelize, DataTypes) => {
+  const Products = sequelize.define('products', {
+    productName: {
+      type: DataTypes.TEXT,
+    },
+    productDescription: {
+      type: DataTypes.TEXT,
+    },
+    productUnitPrice: {
+      type: DataTypes.DOUBLE,
+    },
+    productQuantity: {
+      type: DataTypes.INTEGER,
+    },
+    history: {
+      type: DataTypes.TEXT,
+      get() {
+        try {
+          return JSON.parse(this.getDataValue('history'))
+        } catch (error) {
+          return this.getDataValue('history')
+        }
+      },
+      set(value) {
+        return this.setDataValue('history', JSON.stringify(value))
+      },
+    },
+    qRcode: {
+      type: DataTypes.TEXT,
+    },
+  })
+  Products.associate = (models) => {
+    Products.belongsTo(models.Users)
+  }
+  Products.associate = (models) => {
+    Products.belongsTo(models.Categories)
+  }
+  return Products
+}
 
-const productsSchema = mongoose.Schema({
-  _id: mongoose.SchemaTypes.ObjectId,
-  userId: String,
-  productId: String,
-  categoryId: String,
-  productName: String,
-  productDescription: String,
-  productUnitPrice: Number,
-  productQuantity: Number,
-  history: Array,
-  qRcode: String,
-})
-
-export default mongoose.model('products', productsSchema, 'products')
+export default products

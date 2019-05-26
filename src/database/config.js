@@ -1,8 +1,8 @@
 const dbName = 'inventory_management'
-const mongoURI = `mongodb+srv://micky007:micky007@inventorymanagement-2z5en.mongodb.net/${dbName}?retryWrites=true`
-const mongoPort = '27017'
+const port = '5432'
+const postgresURI = `postgres://postgres:MyNewPassword@localhost:${port}/${dbName}`
 const dbConfig = {
-  conStr: mongoURI,
-  mongoPort,
+  conStr: postgresURI,
+  port,
 }
 module.exports = dbConfig

@@ -1,15 +1,34 @@
-import mongoose from 'mongoose'
+/* eslint-disable no-console */
+import Sequelize from 'sequelize'
 import dbConfig from './config'
+import Users from './models/users.model'
+import Products from './models/products.model'
+import Categories from './models/categories.model'
 
-export default () => {
-  const {
-    conStr = '',
-  } = dbConfig
-  mongoose.connect(conStr, { useNewUrlParser: true })
-  mongoose.connection.on('connected', () => {
-    console.log("DB connection Successful congrats") // eslint-disable-line
+const {
+  conStr = '',
+} = dbConfig
+const sequelize = new Sequelize(conStr)
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.')
   })
-  mongoose.connection.on('error', (err) => {
-  console.log('DB connection Failed..', err) // eslint-disable-line
+  .catch((err) => {
+    console.error('Unable to connect to the database:', err)
   })
+
+const models = {
+  Users: Users(sequelize, Sequelize),
+  Products: Products(sequelize, Sequelize),
+  Categories: Categories(sequelize, Sequelize),
 }
+
+Object.keys(models).forEach((key) => {
+  if ('associate' in models[key]) {
+    models[key].associate(models)
+  }
+})
+
+export { sequelize }
+export default models
