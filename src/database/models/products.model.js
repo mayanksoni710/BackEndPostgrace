@@ -31,8 +31,6 @@ const products = (sequelize, DataTypes) => {
   })
   Products.associate = (models) => {
     Products.belongsTo(models.Users)
-  }
-  Products.associate = (models) => {
     Products.belongsTo(models.Categories)
   }
   return Products

@@ -6,9 +6,7 @@ const categories = (sequelize, DataTypes) => {
   })
   Categories.associate = (models) => {
     Categories.hasMany(models.Products)
-  }
-  Categories.associate = (models) => {
-    Categories.belongsTo(models.Users)
+    Categories.belongsTo(models.BusinessTypes)
   }
   return Categories
 }

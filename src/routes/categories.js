@@ -2,9 +2,6 @@ import express from 'express'
 import models from '../database'
 import { createError } from '../utilities'
 import {
-  USER_NOT_FOUND,
-  USER_ID_INVALID,
-  USER_ID_MISSING,
   CATEGORY_ADDED_SUCCESSFULLY,
   ERROR_ADDING_CATEGORY,
   CATEGORY_DELETED_SUCCESSFULLY,
@@ -12,104 +9,127 @@ import {
   CATEGORY_UPDATED_SUCCESSFULLY,
   ERROR_UPDATING_CATEGORY,
   CATEGORY_ID_MISSING,
+  CATEGORY_NOT_FOUND,
+  CATEGORY_ID_INVALID,
+  BUSINESS_TYPE_ID_MISSING,
 } from '../constants/StaticConstants'
 
 const { Categories } = models
 const router = express.Router()
-router.get('/:userId?/:categoryId?', (req, res, next) => {
+router.get('/:businesstypeId/:categoryId', (req, res, next) => {
   const {
     params: {
-      userId = -1,
       categoryId: id = -1,
+      businesstypeId = -1,
     } = {},
   } = req
-  if (userId === -1) {
-    next(createError(400, USER_ID_MISSING))
-  }
   if (id === -1) {
     next(createError(400, CATEGORY_ID_MISSING))
   }
-  Categories.findAll({
-    where: {
-      userId,
-      id,
-    },
-  })
-    .then((response) => {
-      if (response) res.status(200).json(response)
-      else next(createError(200, USER_NOT_FOUND))
-    })
-    .catch(() => {
-      next(createError(400, USER_ID_INVALID))
-    })
-})
-
-router.get('/:userId', (req, res, next) => {
-  const {
-    params: {
-      userId = -1,
-    } = {},
-  } = req
-  if (userId === -1) {
-    next(createError(400, USER_ID_MISSING))
+  if (businesstypeId === -1) {
+    next(createError(400, BUSINESS_TYPE_ID_MISSING))
   }
   Categories.findAll({
     where: {
-      userId,
+      id,
+      businesstypeId,
     },
   })
     .then((response) => {
       if (response) res.status(200).json(response)
-      else next(createError(200, USER_NOT_FOUND))
+      else next(createError(200, CATEGORY_NOT_FOUND))
     })
     .catch(() => {
-      next(createError(400, USER_ID_INVALID))
+      next(createError(400, CATEGORY_ID_INVALID))
     })
 })
 
-router.delete('/:userId/:categoryId', (req, res, next) => {
+router.get('/:businesstypeId', (req, res, next) => {
   const {
     params: {
-      userId = '',
-      categoryId: id = '',
+      businesstypeId = -1,
     } = {},
   } = req
-  if (userId === -1) {
-    next(createError(200, USER_ID_MISSING))
+  if (businesstypeId === -1) {
+    next(createError(400, BUSINESS_TYPE_ID_MISSING))
+  }
+  Categories.findAll({
+    where: {
+      businesstypeId,
+    },
+  })
+    .then((response) => {
+      if (response) res.status(200).json(response)
+      else next(createError(200, CATEGORY_NOT_FOUND))
+    })
+    .catch(() => {
+      next(createError(400, CATEGORY_ID_INVALID))
+    })
+})
+
+router.get('/', (req, res, next) => {
+  Categories.findAll()
+    .then((response) => {
+      if (response) res.status(200).json(response)
+      else next(createError(200, CATEGORY_NOT_FOUND))
+    })
+    .catch(() => {
+      next(createError(400, CATEGORY_ID_INVALID))
+    })
+})
+
+router.delete('/', (req, res, next) => {
+  Categories.destroy()
+    .then(() => {
+      res.status(200).send({ message: CATEGORY_DELETED_SUCCESSFULLY })
+    })
+    .catch(() => {
+      next(createError(400, ERROR_DELETING_CATEGORY))
+    })
+})
+
+router.delete('/:businesstypeId', (req, res, next) => {
+  const {
+    params: {
+      businesstypeId = -1,
+    } = {},
+  } = req
+  if (businesstypeId === -1) {
+    next(createError(200, BUSINESS_TYPE_ID_MISSING))
     return
   }
+  Categories.destroy({
+    where: {
+      businesstypeId,
+    },
+  })
+    .then(() => {
+      res.status(200).send({ message: CATEGORY_DELETED_SUCCESSFULLY })
+    })
+    .catch(() => {
+      next(createError(400, ERROR_DELETING_CATEGORY))
+    })
+})
+
+router.delete('/:businesstypeId/:categoryId', (req, res, next) => {
+  const {
+    params: {
+      categoryId: id = -1,
+      businesstypeId = -1,
+    } = {},
+  } = req
   if (id === -1) {
     next(createError(200, CATEGORY_ID_MISSING))
     return
   }
-  Categories.destroy({
-    where: {
-      userId,
-      id,
-    },
-  })
-    .then(() => {
-      res.status(200).send({ message: CATEGORY_DELETED_SUCCESSFULLY })
-    })
-    .catch(() => {
-      next(createError(400, ERROR_DELETING_CATEGORY))
-    })
-})
-
-router.delete('/:userId', (req, res, next) => {
-  const {
-    params: {
-      userId = '',
-    } = {},
-  } = req
-  if (userId === -1) {
-    next(createError(200, USER_ID_MISSING))
+  if (businesstypeId === -1) {
+    next(createError(200, BUSINESS_TYPE_ID_MISSING))
     return
   }
-
   Categories.destroy({
     where: {
-      userId,
+      id,
+      businesstypeId,
     },
   })
     .then(() => {
@@ -120,18 +140,22 @@ router.delete('/:userId', (req, res, next) => {
     })
 })
 
-router.post('/:userId?', (req, res, next) => {
+router.post('/:businesstypeId', (req, res, next) => {
   const {
     params: {
-      userId = -1,
+      businesstypeId = -1,
     } = {},
     body: {
       categoryName = '',
     },
   } = req
+  if (businesstypeId === -1) {
+    next(createError(200, BUSINESS_TYPE_ID_MISSING))
+    return
+  }
   Categories.create({
-    userId,
     categoryName,
+    businesstypeId,
   })
     .then((response) => {
       res.status(200).json({
@@ -143,21 +167,17 @@ router.post('/:userId?', (req, res, next) => {
       next(createError(400, ERROR_ADDING_CATEGORY))
     })
 })
-router.put('/:userId?/:categoryId?', (req, res, next) => {
+router.put('/:businesstypeId/:categoryId', (req, res, next) => {
   const {
     params: {
-      userId = -1,
       categoryId: id = -1,
+      businesstypeId = -1,
     } = {},
     body: {
-      categoryName = '',
+      categoryName = -1,
     },
   } = req
   let detailsToUpdate = {}
-  if (userId === -1) {
-    next(createError(200, USER_ID_MISSING))
-    return
-  }
   if (id === -1) {
     next(createError(200, CATEGORY_ID_MISSING))
     return
@@ -168,11 +188,16 @@ router.put('/:userId?/:categoryId?', (req, res, next) => {
       categoryName,
     }
   }
+  if (businesstypeId !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      businesstypeId,
+    }
+  }
   Categories.update(
     { ...detailsToUpdate },
     {
       where: {
-        userId,
         id,
       },
     },

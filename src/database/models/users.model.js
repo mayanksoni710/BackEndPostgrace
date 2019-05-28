@@ -17,10 +17,11 @@ const users = (sequelize, DataTypes) => {
     },
   })
   Users.associate = (models) => {
-    Users.hasMany(models.Categories)
+    Users.hasMany(models.Products)
   }
   Users.associate = (models) => {
-    Users.hasMany(models.Products)
+    Users.hasMany(models.Orders)
+    Users.hasMany(models.Suppliers)
   }
   return Users
 }

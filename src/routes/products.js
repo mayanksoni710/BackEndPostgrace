@@ -264,6 +264,7 @@ router.post('/:userId?/:categoryId?', (req, res, next) => {
       productUnitPrice = 0,
       productQuantity = 0,
       productNewQuantity = 0,
+      supplierId = -1,
     },
   } = req
   let cureentActivity = [{
@@ -277,6 +278,7 @@ router.post('/:userId?/:categoryId?', (req, res, next) => {
       {
         date: currentDateIst(),
         type: QUANTITY_UPDATED,
+        supplierId,
         oldValue: productQuantity,
         updatedValue: productNewQuantity,
         message: `quantity updated from ${productQuantity} to ${productNewQuantity}`,
@@ -328,9 +330,10 @@ router.put('/:userId?/:categoryId?/:productId?', (req, res, next) => {
       productName = -1,
       productDescription = -1,
       productUnitPrice = -1,
-      productQuantity = 0,
-      productNewQuantity = 0,
-      history = 0,
+      productQuantity = -1,
+      productNewQuantity = -1,
+      history = -1,
+      supplierId = -1,
     },
   } = req
   let cureentActivity = []
@@ -338,6 +341,7 @@ router.put('/:userId?/:categoryId?/:productId?', (req, res, next) => {
     cureentActivity = [{
       date: currentDateIst(),
       type: QUANTITY_UPDATED,
+      supplierId,
       oldValue: productQuantity,
       updatedValue: productNewQuantity,
       message: `quantity updated from ${productQuantity} to ${productNewQuantity}`,

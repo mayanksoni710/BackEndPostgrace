@@ -13,6 +13,9 @@ const {
   Users,
   Categories,
   Products,
+  Orders,
+  Suppliers,
+  BusinessTypes,
   Qrcodelist,
 } = routes
 const app = express()
@@ -26,6 +29,9 @@ app.use(robots({ UserAgent: '*', Disallow: '/' }))
 app.use('/users', Users)
 app.use('/categories', Categories)
 app.use('/products', Products)
+app.use('/orders', Orders)
+app.use('/suppliers', Suppliers)
+app.use('/businesstypes', BusinessTypes)
 app.use('/qrcodelist', Qrcodelist)
 app.use(notFoundError)
 app.use(errorHandler)
