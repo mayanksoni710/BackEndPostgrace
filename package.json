@@ -29,7 +29,7 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-react": "^7.11.1",
     "eslint-watch": "^4.0.2",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-robots-txt": "^0.4.0",
     "mongoose": "^5.5.3",
     "morgan": "^1.9.1",
